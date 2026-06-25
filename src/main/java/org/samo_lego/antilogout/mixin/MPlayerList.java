@@ -2,7 +2,6 @@ package org.samo_lego.antilogout.mixin;
 
 import com.mojang.authlib.GameProfile;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
 import org.samo_lego.antilogout.datatracker.ILogoutRules;
@@ -22,22 +21,27 @@ import java.util.UUID;
  * when player with same UUID joins.
  */
 @Mixin(PlayerList.class)
-public abstract class MPlayerList {
+public class MPlayerList {
 
     @Shadow
     @Final
     private MinecraftServer server;
 
-    @Shadow public abstract List<ServerPlayer> getPlayers();
-
     /**
      * When a player wants to connect but is still online,
      * we allow players with same uuid to be disconnected.
+     *
+     * @param gameProfile
+     * @param cir
+     * @param uUID
+     * @param matchingPlayers
+     * @param serverPlayer2
      */
-    @Inject(method = "getPlayerForLogin", at = @At("HEAD"))
-    private void onPlayerLogin(GameProfile gameProfile, ClientInformation clientInformation, CallbackInfoReturnable<ServerPlayer> cir) {
-        var matchingPlayers = getPlayers().stream().filter(player -> player.getUUID().equals(gameProfile.getId())).toList();
-
+    @Inject(method = "getPlayerForLogin",
+            at = @At(value = "INVOKE",
+                    target = "Ljava/util/List;iterator()Ljava/util/Iterator;"),
+            locals = LocalCapture.CAPTURE_FAILHARD)
+    private void onPlayerLogin(GameProfile gameProfile, CallbackInfoReturnable<ServerPlayer> cir, UUID uUID, List<ServerPlayer> matchingPlayers, ServerPlayer serverPlayer2) {
         for (ServerPlayer player : matchingPlayers) {
             // Allows disconnect
             ((ILogoutRules) player).al_setAllowDisconnect(true);

@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.io.ObjectInputFilter.Config;
+import static org.samo_lego.antilogout.AntiLogout.config;
 
 /**
  * Implements {@link ILogoutRules} for {@link ServerPlayer}.
@@ -38,8 +38,8 @@ public abstract class CLogoutRulesPlayer implements ILogoutRules {
     private long taskTime;
 
     @Override
-    public boolean al_allowDisconnect() {   
-        return this.allowDisconnectTime != -1 && this.allowDisconnectTime <= System.currentTimeMillis() && !AntiLogout.config.disableAllLogouts;
+    public boolean al_allowDisconnect() {
+        return this.allowDisconnectTime != -1 && this.allowDisconnectTime <= System.currentTimeMillis();
     }
 
     @Override
@@ -61,7 +61,12 @@ public abstract class CLogoutRulesPlayer implements ILogoutRules {
     public void al_onRealDisconnect() {
         this.disconnected = true;
 
-        if (!this.al_allowDisconnect()) {
+        // Keep player online for grace period if enabled
+        if (config.general.logoutGracePeriod > 0) {
+            long gracePeriodEnd = System.currentTimeMillis() + (long) (config.general.logoutGracePeriod * 1000);
+            this.al_setAllowDisconnectAt(gracePeriodEnd);
+            DISCONNECTED_PLAYERS.add((ServerPlayer) (Object) this);
+        } else if (!this.al_allowDisconnect()) {
             DISCONNECTED_PLAYERS.add((ServerPlayer) (Object) this);
         }
     }

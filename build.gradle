@@ -1,13 +1,13 @@
 plugins {
-	id 'fabric-loom' version '1.9-SNAPSHOT'
+	id 'fabric-loom' version '1.1-SNAPSHOT'
 	id 'maven-publish'
 
 	id "com.matthewprenger.cursegradle" version "1.4.0"
 	id "com.modrinth.minotaur" version "2.+"
 }
 
-sourceCompatibility = JavaVersion.VERSION_21
-targetCompatibility = JavaVersion.VERSION_21
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
 archivesBaseName = project.archives_base_name
 version = project.mod_version
@@ -16,6 +16,8 @@ group = project.maven_group
 repositories {
 	maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 	maven { url 'https://jitpack.io' }
+	maven { url 'https://maven.terraformersmc.com/' }
+	maven { url 'https://repo.extendedclip.com/content/repositories/placeholder/' }
 }
 
 loom {
@@ -38,8 +40,8 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	modImplementation(include('me.lucko:fabric-permissions-api:0.2-SNAPSHOT'))
-	modImplementation include("com.github.samolego:Config2Brigadier:${project.config2brigadier_version}")
+	modImplementation include('me.lucko:fabric-permissions-api:0.3.1')
+	modImplementation include("com.github.samolego.Config2Brigadier:config2brigadier-fabric:${project.config2brigadier_version}")
 }
 
 processResources {
@@ -51,7 +53,7 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 21
+	it.options.release = 17
 }
 
 java {
