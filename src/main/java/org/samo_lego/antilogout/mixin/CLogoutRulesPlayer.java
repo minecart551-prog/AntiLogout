@@ -66,8 +66,11 @@ public abstract class CLogoutRulesPlayer implements ILogoutRules {
             long gracePeriodEnd = System.currentTimeMillis() + (long) (config.general.logoutGracePeriod * 1000);
             this.al_setAllowDisconnectAt(gracePeriodEnd);
             DISCONNECTED_PLAYERS.add((ServerPlayer) (Object) this);
-        } else if (!this.al_allowDisconnect()) {
-            DISCONNECTED_PLAYERS.add((ServerPlayer) (Object) this);
+        } else {
+            // Original behavior: only keep if not allowed to disconnect (combat log prevention)
+            if (!this.al_allowDisconnect()) {
+                DISCONNECTED_PLAYERS.add((ServerPlayer) (Object) this);
+            }
         }
     }
 
